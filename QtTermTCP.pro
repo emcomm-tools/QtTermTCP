@@ -3,6 +3,7 @@ QT += core gui
 QT += network
 QT += widgets
 QT += serialport
+QT += sql
 
 
 TARGET = QtTermTCP
@@ -23,16 +24,20 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x050000    # disables all the APIs depr
 
 SOURCES += main.cpp\
         QtTermTCP.cpp\
-        TermTCPCommon.cpp\ 
+        TermTCPCommon.cpp\
         TabDialog.cpp  \
         AGWCode.cpp \
         ax25.c \
         UZ7HOUtils.c \
         ax25_l2.c\
-        utf8Routines.cpp
+        utf8Routines.cpp \
+        BBSCache.cpp \
+        BBSCacheDialog.cpp
 
 HEADERS  += QtTermTCP.h\
-        TabDialog.h
+        TabDialog.h \
+        BBSCache.h \
+        BBSCacheDialog.h
 
 FORMS    += QtTermTCP.ui\
         ListenPort.ui \

@@ -1,6 +1,6 @@
 // Qt Version of BPQTermTCP
 
-#define VersionString "0.0.0.58"
+#define VersionString "0.0.0.59"
 
 // .12 Save font weight
 // .13 Display incomplete lines (ie without CR)
@@ -64,6 +64,7 @@
 // .57 Fix KISS mode incoming call handling
 // .58 Add method to toggle Normal/Teletext Mode
 //	   Fix KISS multiple session protection
+// .59 Add Teletext double height mode
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -73,6 +74,9 @@
 
 #include "QtTermTCP.h"
 #include "TabDialog.h"
+#include "BBSCache.h"
+#include "BBSCacheDialog.h"
+#include <QMessageBox>
 #include <time.h>
 #include <QVBoxLayout>
 #include <QListWidgetItem>
@@ -918,6 +922,7 @@ Ui_ListenSession * newWindow(QObject * parent, int Type, const char * Label)
 
 		Sess->TTBitmap = new QImage(40 * 15, 25 * 19, QImage::Format_RGB32);
 		Sess->TTBitmap->fill(Qt::black);
+
 /*
 
 		char Page[4096];
@@ -930,6 +935,7 @@ Ui_ListenSession * newWindow(QObject * parent, int Type, const char * Label)
 		Sess->TTActive = 1;
 		strcpy(Sess->pageBuffer, Page);
 		DecodeTeleText(Sess, Sess->pageBuffer);
+
 */
 
 		Sess->TTLabel->setPixmap(QPixmap::fromImage(*Sess->TTBitmap));
@@ -1035,6 +1041,11 @@ QtTermTCP::QtTermTCP(QWidget *parent) : QMainWindow(parent)
 	restoreState(mysettings.value("windowState").toByteArray());
 
 	GetSettings();
+
+	// Initialize BBS Cache
+	g_bbsCache = new BBSCache(this);
+	connect(g_bbsCache, SIGNAL(bbsDetected(Ui_ListenSession*, const QString&)),
+	        this, SLOT(onBBSDetected(Ui_ListenSession*, const QString&)));
 
 	// Set background colours
 
@@ -1297,6 +1308,12 @@ QtTermTCP::QtTermTCP(QWidget *parent) : QMainWindow(parent)
 	connect(KISSAction, SIGNAL(triggered()), this, SLOT(KISSSlot()));
 	KISSAction->setFont(*menufont);
 
+	setupMenu->addSeparator();
+
+	bbsCacheAction = new QAction("BBS Cache", this);
+	setupMenu->addAction(bbsCacheAction);
+	connect(bbsCacheAction, SIGNAL(triggered()), this, SLOT(showBBSCache()));
+	bbsCacheAction->setFont(*menufont);
 
 	actChatMode = setupMenuLine(setupMenu, (char *)"Chat Terminal Mode", this, ChatMode);
 	actAutoTeletext = setupMenuLine(setupMenu, (char *)"Auto switch to Teletext", this, AutoTeletext);
@@ -1513,6 +1530,50 @@ void QtTermTCP::doQuit()
 	SaveSettings();
 
 	QCoreApplication::quit();
+}
+
+// BBS Cache slots
+
+void QtTermTCP::showBBSCache()
+{
+	BBSCacheDialog dlg(g_bbsCache, this);
+	dlg.exec();
+}
+
+void QtTermTCP::onBBSDetected(Ui_ListenSession *sess, const QString &node)
+{
+	if (g_bbsCache && g_bbsCache->hasCache(node)) {
+		QMessageBox::StandardButton reply = QMessageBox::question(
+			this,
+			"BBS Cache",
+			QString("Previous session found for %1.\nReload cached bulletins?").arg(node),
+			QMessageBox::Yes | QMessageBox::No,
+			QMessageBox::No
+		);
+
+		if (reply == QMessageBox::Yes) {
+			// Get cached bulletins and display in terminal
+			QList<QVariantMap> bulletins = g_bbsCache->getCachedBulletins(node);
+			QString output = QString("\n--- Cached bulletins for %1 (%2 entries) ---\n\n")
+				.arg(node).arg(bulletins.size());
+
+			for (const QVariantMap &b : bulletins) {
+				output += QString("%1  %2  %3  %4  %5  @%6  %7  %8\n")
+					.arg(b["msg_id"].toInt(), -6)
+					.arg(b["date"].toString(), -6)
+					.arg(b["type"].toString(), -2)
+					.arg(b["size"].toInt(), 6)
+					.arg(b["category"].toString(), -6)
+					.arg(b["dist"].toString(), -4)
+					.arg(b["from_call"].toString(), -8)
+					.arg(b["title"].toString());
+			}
+			output += "\n--- End of cache ---\n\n";
+
+			QByteArray data = output.toUtf8();
+			WritetoOutputWindow(sess, (unsigned char *)data.data(), data.size());
+		}
+	}
 }
 
 // "Copy on select" Code
@@ -2275,6 +2336,10 @@ void QtTermTCP::LreturnPressed(Ui_ListenSession * Sess)
 	}
 
 	Sess->KbdStack[0] = qstrdup(stringData.data());
+
+	// Notify BBS cache of user command
+	if (g_bbsCache)
+		g_bbsCache->onCommandSent(Sess, QString(stringData));
 
 	stringData.append('\n');
 
@@ -6539,7 +6604,7 @@ void DecodeTeleText(Ui_ListenSession * Sess, char * page)
 			switch (echar)
 			{
 			case '@':
-//				fg = Qt::black;
+				fg = Qt::black;
 				concealed = false;    // Side effect of colour. It cancels a conceal.
 				graphicsMode = false;
 //				hold = false;
@@ -6895,10 +6960,41 @@ void DecodeTeleText(Ui_ListenSession * Sess, char * page)
 							s[2] = 0x88;
 						}
 
+//						if (doubleHeight)
+	//							p.drawText(col * 15, line * 19 + 25, s);
+		//					else
+			//					p.drawText(col * 15, line * 19 + 15, s);
+
+						// if double height draw normally then copy pixels each row of pixels to two scanlines (starting at the bottom)
+
 						if (doubleHeight)
-								p.drawText(col * 15, line * 19 + 25, s);
-							else
-								p.drawText(col * 15, line * 19 + 15, s);
+						{
+							int inscanline = line * 19 + 18;
+							int outscanline = line * 19 + 35;
+							unsigned char * inptr = Sess->TTBitmap->scanLine(inscanline);
+							unsigned char * outptr = Sess->TTBitmap->scanLine(outscanline);
+							int linelen = Sess->TTBitmap->bytesPerLine();
+							int charlen = linelen / 40;			// bytes per char position
+
+							p.drawText(col * 15, line * 19 + 16, s);
+
+							inptr += col * charlen;
+							outptr += col * charlen;
+
+							for (int i = 0; i < 18; i++)
+							{
+								memcpy(outptr, inptr, charlen);
+								outptr -= linelen;
+								memcpy(outptr, inptr, charlen);
+
+								inptr -= linelen;
+								outptr -= linelen;
+
+							}
+						}
+						else
+							p.drawText(col * 15, line * 19 + 15, s);
+
 					}
 				}
 			}

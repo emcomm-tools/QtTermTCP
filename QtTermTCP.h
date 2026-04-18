@@ -214,6 +214,8 @@ private slots:
 	void VARAFMChanged(bool State);
 	void VARASATChanged(bool State);
 	void SetVARAParams();
+	void showBBSCache();
+	void onBBSDetected(Ui_ListenSession *sess, const QString &node);
 
 protected:
 	bool eventFilter(QObject* obj, QEvent *event);
@@ -242,6 +244,7 @@ private:
 	QAction *VARAAction;
 	QAction *KISSAction;
 	QAction *quitAction;
+	QAction *bbsCacheAction;
 
 	QList<myTcpSocket*>  _sockets;
 

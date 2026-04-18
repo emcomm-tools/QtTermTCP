@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "QtTermTCP.h"
+#include "BBSCache.h"
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -170,6 +171,10 @@ void ProcessReceivedData(Ui_ListenSession * Sess, unsigned char * Buffer, int le
 	unsigned char * ptr;
 	unsigned char * Buffptr;
 	unsigned char * FEptr = 0;
+
+	// Feed data to BBS cache for session detection and storage
+	if (g_bbsCache)
+		g_bbsCache->onDataReceived(Sess, (const char *)Buffer, len);
 
 	if (Sess->InputMode == 'Y')			// Yapp
 	{
@@ -735,15 +740,15 @@ int InnerProcessYAPPMessage(Ui_ListenSession * Sess, UCHAR * Msg, int Len)
 										cant use DosDateTimeToFileTime on Linux
 
 										Bits	Description
-										0-4	Day of the month (1–31)
+										0-4	Day of the month (1ï¿½31)
 										5-8	Month (1 = January, 2 = February, and so on)
 										9-15	Year offset from 1980 (add 1980 to get actual year)
 										wFatTime
 										The MS-DOS time. The time is a packed value with the following format.
 										Bits	Description
 										0-4	Second divided by 2
-										5-10	Minute (0–59)
-										11-15	Hour (0–23 on a 24-hour clock)
+										5-10	Minute (0ï¿½59)
+										11-15	Hour (0ï¿½23 on a 24-hour clock)
 					*/
 					/*
 				
@@ -1020,15 +1025,15 @@ void YAPPSendFile(Ui_ListenSession * Sess, WCHAR * FN)
 					cant use DosDateTimeToFileTime on Linux
 
 					Bits	Description
-					0-4	Day of the month (1–31)
+					0-4	Day of the month (1ï¿½31)
 					5-8	Month (1 = January, 2 = February, and so on)
 					9-15	Year offset from 1980 (add 1980 to get actual year)
 					wFatTime
 					The MS-DOS time. The time is a packed value with the following format.
 					Bits	Description
 					0-4	Second divided by 2
-					5-10	Minute (0–59)
-					11-15	Hour (0–23 on a 24-hour clock)
+					5-10	Minute (0ï¿½59)
+					11-15	Hour (0ï¿½23 on a 24-hour clock)
 
 					memset(&TM, 0, sizeof(TM));
 
