@@ -1,0 +1,11 @@
+*.o
+*.stash
+Makefile
+moc_*.cpp
+moc_*.o
+qrc_*.cpp
+qrc_*.o
+ui_*.h
+moc_predefs.h
+QtTermTCP.pro.user
+QtTermTCP.ini
