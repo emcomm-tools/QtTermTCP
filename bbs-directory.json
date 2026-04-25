@@ -9,7 +9,7 @@
       "grid": "EM83xl",
       "power": "50W",
       "antenna": "EFLW & 40/20/10 LOOP",
-      "notes": "",
+      "notes": "VHF on 145.010 Forwarding Partners: Primary:K7EK Secondary:N3MEL-2",
       "bands": [
         {
           "band": "80m",
@@ -57,7 +57,7 @@
       "grid": "EN54rs",
       "power": "50W",
       "antenna": "EFHW, sloped from 12ft to 60 ft",
-      "notes": "",
+      "notes": "3596.0_0000-1300, 7101.3_1000-0359, 7103.2_1300-0159 10143.0_1800-2359, 14102.3_1300-0159, 14106.5_1300-0159.",
       "bands": [
         {
           "band": "80m",
@@ -66,7 +66,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "00-13"
         },
         {
           "band": "40m",
@@ -75,7 +75,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "10-04"
         },
         {
           "band": "40m",
@@ -84,7 +84,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "13-02"
         },
         {
           "band": "30m",
@@ -93,7 +93,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "18-00"
         },
         {
           "band": "20m",
@@ -102,8 +102,18 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "13-02"
+        },
+        {
+          "band": "20m",
+          "frequency": 14102300,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "13-02"
         }
+        
       ]
     },
     {
@@ -159,7 +169,7 @@
       "grid": "EN42lh",
       "power": "50W",
       "antenna": "OCFD @ 50 ft",
-      "notes": "",
+      "notes": "Time/Frequency: 02:00z -13:00z 3580,3596 13:00z - 02:00z 7089.0, 7101.3, 7103.2 Also operate 14102.3 AX25 Packet 24/7",
       "bands": [
         {
           "band": "80m",
@@ -168,7 +178,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "02-13"
         },
         {
           "band": "80m",
@@ -177,7 +187,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "02-13"
         },
         {
           "band": "40m",
@@ -186,7 +196,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "13-02"
         },
         {
           "band": "40m",
@@ -195,7 +205,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "13-02"
         },
         {
           "band": "40m",
@@ -205,7 +215,16 @@
             500
           ],
           "hours": "00-00"
-        }
+        },
+        {
+          "band": "20m",
+          "frequency": 14102300,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }        
       ]
     },
     {
@@ -246,7 +265,7 @@
       "grid": "DN10qj",
       "power": "40 watts",
       "antenna": "80/40 m fan dipole NVIS",
-      "notes": "",
+      "notes": "Station is completely solar powered. Also have a 70cm YSF repeater on-site 444.550",
       "bands": [
         {
           "band": "40m",
@@ -276,7 +295,7 @@
       "grid": "EM70ef",
       "power": "50 Watts",
       "antenna": "Moonraker GPA-80 at 30 ft",
-      "notes": "",
+      "notes": "Bay County, FL Local access 145.050 FM AX.25 Packet, Nationwide access on VARA (BW500) 80, 40, 20, 6 meters frequencies listed above. Net105 300baud HF packet 14.105MHz (LSB) 24/7",
       "bands": [
         {
           "band": "80m",
@@ -306,7 +325,7 @@
           "hours": "00-00"
         },
         {
-          "band": "60m",
+          "band": "6m",
           "frequency": 5065000,
           "mode": "VARA HF",
           "bandwidth": [
@@ -324,7 +343,7 @@
       "grid": "FM17ei",
       "power": "35W",
       "antenna": "Hustler 6BTV Vertical",
-      "notes": "",
+      "notes": "Vara HF/Ardop/300bdAX.25 on 40m (daytime) and 80m (nighttime). Vara FM/1200bdAX.25 on 2m and 70cm",
       "bands": [
         {
           "band": "80m",
@@ -347,7 +366,7 @@
       ]
     },
     {
-      "callsign": "N3HYM",
+      "callsign": "N3HYM-5",
       "sysop": "RAY",
       "network": "TPRFN",
       "location": "Frederick, Maryland",
@@ -411,7 +430,7 @@
       "grid": "FM29dx",
       "power": "35W",
       "antenna": "Full Size G5RV Inverted from 65ft",
-      "notes": "",
+      "notes": "SEPA Hubs Station 25 miles west of Philly. I have direct HF access to the Digital Traffic Network for NTS messages via NY2D with N3HYM or K7EK as backups.",
       "bands": [
         {
           "band": "40m",
@@ -420,7 +439,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "13-23"
         },
         {
           "band": "20m",
@@ -429,7 +448,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "13-23"
         },
         {
           "band": "80m",
@@ -438,7 +457,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "23-13"
         }
       ]
     },
@@ -603,7 +622,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "12-00"
         },
         {
           "band": "80m",
@@ -612,7 +631,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "00-12"
         }
       ]
     },
@@ -672,7 +691,7 @@
       "grid": "CN84ka",
       "power": "50 W",
       "antenna": "Full wavelength loop for 80 Meters at about 30 feet ABGL",
-      "notes": "",
+      "notes": "Daily operating schedule 20M 14:01 - 01:00 UTC, 40M 01:01 - 03:00, 80M 03:01- 05:00, 05:01-14:00",
       "bands": [
         {
           "band": "80m",
@@ -681,7 +700,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "03-14"
         },
         {
           "band": "40m",
@@ -690,7 +709,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "01-03"
         },
         {
           "band": "20m",
@@ -699,7 +718,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "14-01"
         }
       ]
     },
@@ -711,7 +730,7 @@
       "grid": "EN52pf",
       "power": "40w",
       "antenna": "Hustler 6BTV vertical using ground radial system",
-      "notes": "",
+      "notes": "WC9P BBS FREQUENCY/TIME SCHEDULE: 0000-1259z: 3.585, 3.586, 3.587, *3.596, 3.597 mhz, 1300-1859z: 7.1009, 7.1015, 7.1025, *7.1032 mhz, 1900-2359z: 10.1400, 10.1415, *10.1430, 10.147 mhz.",
       "bands": [
         {
           "band": "80m",
@@ -720,7 +739,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "00-13"
         },
         {
           "band": "40m",
@@ -729,7 +748,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "13-19"
         },
         {
           "band": "30m",
@@ -738,7 +757,7 @@
           "bandwidth": [
             500
           ],
-          "hours": "00-00"
+          "hours": "19-00"
         }
       ]
     },
@@ -750,7 +769,7 @@
       "grid": "EN71lo",
       "power": "100W",
       "antenna": "Hustler 6BTV",
-      "notes": "",
+      "notes": "Daytime operation on 20/40 meters and 80 at night. 24 hour operation on 145.530mhz 1200b AFSK",
       "bands": [
         {
           "band": "40m",
