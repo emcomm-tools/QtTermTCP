@@ -32,12 +32,18 @@ SOURCES += main.cpp\
         ax25_l2.c\
         utf8Routines.cpp \
         BBSCache.cpp \
-        BBSCacheDialog.cpp
+        BBSCacheDialog.cpp \
+        BBSDirectory.cpp \
+        BBSDirectoryDialog.cpp \
+        BBSStationEditor.cpp
 
 HEADERS  += QtTermTCP.h\
         TabDialog.h \
         BBSCache.h \
-        BBSCacheDialog.h
+        BBSCacheDialog.h \
+        BBSDirectory.h \
+        BBSDirectoryDialog.h \
+        BBSStationEditor.h
 
 FORMS    += QtTermTCP.ui\
         ListenPort.ui \

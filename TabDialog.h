@@ -128,6 +128,7 @@ public:
 private slots:
 	void myaccept();
 	void myreject();
+	void openBBSDirectory();
 
 private:
 	//   Ui::TabDialog *ui;

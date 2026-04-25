@@ -3,6 +3,9 @@
 
 #include "TabDialog.h"
 #include "QtTermTCP.h"
+#include "BBSDirectory.h"
+#include "BBSDirectoryDialog.h"
+#include "BBSStationEditor.h"
 #include <QTcpServer>
 #include "QSettings"
 #include "QLineEdit"
@@ -16,6 +19,10 @@
 #include "QCheckBox"
 #include "QFormLayout"
 #include "QScrollArea"
+#include <QMessageBox>
+#include <QFile>
+#include <QPushButton>
+#include <QCoreApplication>
 
 #include "ax25.h"
 
@@ -615,17 +622,15 @@ VARAConnect::VARAConnect(QWidget *parent) : QDialog(parent)
 
 	scrollArea = new QScrollArea(this);
 	scrollArea->setObjectName(QString::fromUtf8("scrollArea"));
-	scrollArea->setGeometry(QRect(5, 5, 250, 150));
+	scrollArea->setGeometry(QRect(5, 5, 290, 170));
 	scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-	scrollArea->setWidgetResizable(false);
+	scrollArea->setWidgetResizable(true);
 	scrollAreaWidgetContents = new QWidget();
 	scrollAreaWidgetContents->setObjectName(QString::fromUtf8("scrollAreaWidgetContents"));
 
 	QVBoxLayout *layout = new QVBoxLayout();
 	layout->setContentsMargins(10, 10, 10, 10);
-
-	setLayout(layout);
 
 	QFormLayout *formLayout2 = new QFormLayout();
 	layout->addLayout(formLayout2);
@@ -644,6 +649,10 @@ VARAConnect::VARAConnect(QWidget *parent) : QDialog(parent)
 
 	layout->addSpacing(2);
 
+	QPushButton *bbsDirBtn = new QPushButton("BBS Directory...");
+	bbsDirBtn->setFont(*menufont);
+	layout->addWidget(bbsDirBtn);
+
 	buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
 	buttonBox->setFont(*menufont);
 	layout->addWidget(buttonBox);
@@ -656,10 +665,68 @@ VARAConnect::VARAConnect(QWidget *parent) : QDialog(parent)
 
 	connect(buttonBox, SIGNAL(accepted()), this, SLOT(myaccept()));
 	connect(buttonBox, SIGNAL(rejected()), this, SLOT(myreject()));
+	connect(bbsDirBtn, &QPushButton::clicked, this, &VARAConnect::openBBSDirectory);
+
+	this->resize(320, 195);
 }
 
 VARAConnect::~VARAConnect()
 {
+}
+
+extern int VARA500;
+extern int VARA2300;
+extern int VARA2750;
+extern int PTTMode;
+#define PTTHAMLIB 16
+#define PTTFLRIG  32
+
+void VARAConnect::openBBSDirectory()
+{
+    // Determine current VARA bandwidth setting
+    int bw = 0;
+    if (VARA500)       bw = 500;
+    else if (VARA2300) bw = 2300;
+    else if (VARA2750) bw = 2750;
+
+    // Ensure global directory is loaded
+    if (!g_bbsDirectory) {
+        g_bbsDirectory = new BBSDirectory();
+        QString localPath = g_bbsDirectory->localFilePath();
+        if (QFile::exists(localPath))
+            g_bbsDirectory->loadFromFile(localPath);
+        else {
+            QString bundled = QCoreApplication::applicationDirPath() + "/bbs-directory.json";
+            if (QFile::exists(bundled))
+                g_bbsDirectory->loadFromFile(bundled);
+        }
+    }
+
+    if (g_bbsDirectory->stations().isEmpty()) {
+        QMessageBox::information(this, "BBS Directory",
+            "No station data loaded.\nClick 'Refresh Online' in the directory to fetch the latest list.");
+    }
+
+    // Query rig for current frequency → band filter
+    extern quint64 GetRigFrequency();
+    quint64 rigFreq = GetRigFrequency();
+    QString band = BBSDirectory::freqToBand(rigFreq);
+
+    BBSDirectoryDialog dlg(g_bbsDirectory, band, bw, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    BBSDirectorySelection sel = dlg.selection();
+
+    // Fill the Call To field
+    if (!sel.callsign.isEmpty())
+        wCallTo->setEditText(sel.callsign);
+
+    // QSY the rig if frequency is set and HAMLIB/FLRig is configured
+    if (sel.frequency > 0 && (PTTMode & (PTTHAMLIB | PTTFLRIG))) {
+        extern void SetRigFrequency(quint64 freq);
+        SetRigFrequency(sel.frequency);
+    }
 }
 
 extern myTcpSocket * VARASock;
@@ -692,10 +759,36 @@ void VARAConnect::myaccept()
 
 	if (Via[0])
 		Len = sprintf(Msg, "CONNECT %s %s VIA %s\r", CallFrom, CallTo, Via);
-	else 
+	else
 		Len = sprintf(Msg, "CONNECT %s %s\r", CallFrom, CallTo);
 
 	VARASock->write(Msg, Len);
+
+	// Auto-add unknown BBS station to the directory
+	if (CallTo[0] && g_bbsDirectory && !g_bbsDirectory->hasStation(CallTo)) {
+		extern quint64 GetRigFrequency();
+		quint64 freq = GetRigFrequency();
+		QString band = BBSDirectory::freqToBand(freq);
+
+		if (QMessageBox::question(this, "New BBS Station",
+				QString("%1 is not in the BBS directory.\nAdd it now?").arg(CallTo),
+				QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+		{
+			BBSStation st;
+			st.callsign = CallTo;
+			if (freq > 0) {
+				BBSBandEntry be;
+				be.frequency = freq;
+				be.band      = band;
+				be.mode      = "VARA HF";
+				be.hours     = "00-00";
+				st.bands.append(be);
+			}
+			BBSStationEditor editor(st, this);
+			if (editor.exec() == QDialog::Accepted)
+				g_bbsDirectory->addOrUpdateStation(editor.result());
+		}
+	}
 
 	discAction->setEnabled(true);
 	VARAConnect::accept();

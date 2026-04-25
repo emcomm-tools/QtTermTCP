@@ -9,13 +9,14 @@
 #include <QLabel>
 
 class BBSCache;
+struct Ui_ListenSession;
 
 class BBSCacheDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit BBSCacheDialog(BBSCache *cache, QWidget *parent = nullptr);
+    explicit BBSCacheDialog(BBSCache *cache, Ui_ListenSession *sess = nullptr, QWidget *parent = nullptr);
 
 private slots:
     void nodeChanged(int index);
@@ -27,6 +28,7 @@ private:
     void loadBulletins(const QString &node);
 
     BBSCache *m_cache;
+    Ui_ListenSession *m_sess;
     QComboBox *m_nodeCombo;
     QTableWidget *m_table;
     QTextEdit *m_messageView;

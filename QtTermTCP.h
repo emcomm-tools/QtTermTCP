@@ -22,6 +22,9 @@
 #include "QSettings"
 #include "QThread"
 #include <QFontDialog>
+#include "BBSCacheDialog.h"
+#include "BBSDirectory.h"
+#include "BBSDirectoryDialog.h"
 #include <QScrollBar>
 #include <QFileDialog>
 #include <QTabWidget>
@@ -215,6 +218,7 @@ private slots:
 	void VARASATChanged(bool State);
 	void SetVARAParams();
 	void showBBSCache();
+	void showBBSDirectory();
 	void onBBSDetected(Ui_ListenSession *sess, const QString &node);
 
 protected:
@@ -245,6 +249,9 @@ private:
 	QAction *KISSAction;
 	QAction *quitAction;
 	QAction *bbsCacheAction;
+	QAction *bbsDirectoryAction;
+	BBSCacheDialog *m_bbsCacheDialog = nullptr;
+	BBSDirectory *m_bbsDirectory = nullptr;
 
 	QList<myTcpSocket*>  _sockets;
 

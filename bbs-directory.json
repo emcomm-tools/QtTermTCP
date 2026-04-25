@@ -1,0 +1,803 @@
+{
+  "version": "1.0",
+  "stations": [
+    {
+      "callsign": "K1AJD-7",
+      "sysop": "Tony",
+      "network": "TPRFN",
+      "location": "",
+      "grid": "EM83xl",
+      "power": "50W",
+      "antenna": "EFLW & 40/20/10 LOOP",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "30m",
+          "frequency": 10147000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "20m",
+          "frequency": 14106500,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "K5DAT-1",
+      "sysop": "Lee Bengston",
+      "network": "TPRFN",
+      "location": "",
+      "grid": "EN54rs",
+      "power": "50W",
+      "antenna": "EFHW, sloped from 12ft to 60 ft",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7101300,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "30m",
+          "frequency": 10143000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "20m",
+          "frequency": 14106500,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "K7EK",
+      "sysop": "Gary",
+      "network": "TPRFN",
+      "location": "Radcliff, Kentucky",
+      "grid": "EM77at",
+      "power": "75W",
+      "antenna": "Hustler 6BTV vertical with elevated radials",
+      "notes": "Scanning schedule: 0000-1259z 80m, 1300-1859z 40m, 1900-2359z 30m",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500,
+            2300,
+            2750
+          ],
+          "hours": "00-12"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500,
+            2300,
+            2750
+          ],
+          "hours": "13-18"
+        },
+        {
+          "band": "30m",
+          "frequency": 10143000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500,
+            2300,
+            2750
+          ],
+          "hours": "19-00"
+        }
+      ]
+    },
+    {
+      "callsign": "KA0PND-1",
+      "sysop": "Delbert",
+      "network": "TPRFN",
+      "location": "Cascade, IA",
+      "grid": "EN42lh",
+      "power": "50W",
+      "antenna": "OCFD @ 50 ft",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3580000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7089000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7101300,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "KA3VSP-1",
+      "sysop": "Brian",
+      "network": "TPRFN",
+      "location": "Pennsylvania",
+      "grid": "FM29ep",
+      "power": "",
+      "antenna": "",
+      "notes": "",
+      "bands": [
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "KD6MTU-1",
+      "sysop": "Guy",
+      "network": "TPRFN",
+      "location": "Carson City, Nevada",
+      "grid": "DN10qj",
+      "power": "40 watts",
+      "antenna": "80/40 m fan dipole NVIS",
+      "notes": "",
+      "bands": [
+        {
+          "band": "40m",
+          "frequency": 7089000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "80m",
+          "frequency": 3580000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "KK4DIV-1",
+      "sysop": "Bob Plank",
+      "network": "TPRFN",
+      "location": "",
+      "grid": "EM70ef",
+      "power": "50 Watts",
+      "antenna": "Moonraker GPA-80 at 30 ft",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "20m",
+          "frequency": 14106500,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "60m",
+          "frequency": 5065000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "KN4LQN-2",
+      "sysop": "David Elkins",
+      "network": "TPRFN",
+      "location": "Virginia",
+      "grid": "FM17ei",
+      "power": "35W",
+      "antenna": "Hustler 6BTV Vertical",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "N3HYM",
+      "sysop": "RAY",
+      "network": "TPRFN",
+      "location": "Frederick, Maryland",
+      "grid": "FM19fk",
+      "power": "50W",
+      "antenna": "END FED DIPOLE 120 FEET",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3590400,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7100900,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "30m",
+          "frequency": 10145000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "20m",
+          "frequency": 14096400,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "15m",
+          "frequency": 21095000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "N3MEL-2",
+      "sysop": "Glenn",
+      "network": "TPRFN",
+      "location": "Downingtown, PA",
+      "grid": "FM29dx",
+      "power": "35W",
+      "antenna": "Full Size G5RV Inverted from 65ft",
+      "notes": "",
+      "bands": [
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "20m",
+          "frequency": 14106500,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "N4SFL-1",
+      "sysop": "Jason Flanzbaum",
+      "network": "TPRFN",
+      "location": "",
+      "grid": "EL96wi",
+      "power": "100W",
+      "antenna": "Diamond X50A, Chameleon EMCOMM-III-P",
+      "notes": "",
+      "bands": [
+        {
+          "band": "20m",
+          "frequency": 14106500,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "30m",
+          "frequency": 10147000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "N5MDT-4",
+      "sysop": "Mark",
+      "network": "TPRFN",
+      "location": "Texas",
+      "grid": "EM20ej",
+      "power": "15W",
+      "antenna": "EFHF @",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3594200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "30m",
+          "frequency": 10144700,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "20m",
+          "frequency": 14106500,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "N9SEO-1",
+      "sysop": "Kayne Kruse",
+      "network": "TPRFN",
+      "location": "Arkansas",
+      "grid": "EM36tg",
+      "power": "30W",
+      "antenna": "Trapped vertical",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "80m",
+          "frequency": 3597000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "20m",
+          "frequency": 14106500,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "VA2OPS",
+      "sysop": "Sylvain Deguire",
+      "network": "TPRFN",
+      "location": "Montreal, QC",
+      "grid": "FN35fl",
+      "power": "50w",
+      "antenna": "Cha Delta loop",
+      "notes": "",
+      "bands": [
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "W1DTX-4",
+      "sysop": "Steve Montague",
+      "network": "TPRFN",
+      "location": "Sullivan, Maine",
+      "grid": "FN54vm",
+      "power": "10W HF 25W VHF",
+      "antenna": "",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7101300,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7100900,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "W7BMH-1",
+      "sysop": "Brian Hoyland",
+      "network": "TPRFN",
+      "location": "Eugene,Oregon",
+      "grid": "CN84ka",
+      "power": "50 W",
+      "antenna": "Full wavelength loop for 80 Meters at about 30 feet ABGL",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3588000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7101300,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "20m",
+          "frequency": 14102300,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "WC9P",
+      "sysop": "Bill",
+      "network": "TPRFN",
+      "location": "",
+      "grid": "EN52pf",
+      "power": "40w",
+      "antenna": "Hustler 6BTV vertical using ground radial system",
+      "notes": "",
+      "bands": [
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "30m",
+          "frequency": 10143000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    },
+    {
+      "callsign": "WW6Q-1",
+      "sysop": "Roy",
+      "network": "TPRFN",
+      "location": "Indiana",
+      "grid": "EN71lo",
+      "power": "100W",
+      "antenna": "Hustler 6BTV",
+      "notes": "",
+      "bands": [
+        {
+          "band": "40m",
+          "frequency": 7101300,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "40m",
+          "frequency": 7103200,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "80m",
+          "frequency": 3596000,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "20m",
+          "frequency": 14106500,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        },
+        {
+          "band": "20m",
+          "frequency": 14102300,
+          "mode": "VARA HF",
+          "bandwidth": [
+            500
+          ],
+          "hours": "00-00"
+        }
+      ]
+    }
+  ]
+}

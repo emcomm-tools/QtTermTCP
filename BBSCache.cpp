@@ -5,6 +5,18 @@
 #include <QSqlError>
 #include <QDateTime>
 #include <QDebug>
+#include <QFile>
+#include <QTextStream>
+
+static QFile g_logFile;
+
+static void bbsLog(const QString &msg)
+{
+    if (!g_logFile.isOpen()) return;
+    QTextStream out(&g_logFile);
+    out << QDateTime::currentDateTime().toString("hh:mm:ss.zzz") << " " << msg << "\n";
+    g_logFile.flush();
+}
 
 // Global pointer — set in QtTermTCP constructor
 BBSCache *g_bbsCache = nullptr;
@@ -14,20 +26,20 @@ BBSCache::BBSCache(QObject *parent)
 {
     // Compile regex patterns once
     m_rxBanner1 = QRegularExpression("Connected to BBS");
-    m_rxBanner2 = QRegularExpression("\\*\\*\\* Connected to (\\S+)");
+    m_rxBanner2 = QRegularExpression("\\*+ Connected to (\\S+)");
     m_rxBPQVersion = QRegularExpression("\\[BPQ-([^\\]]+)\\]");
-    m_rxPrompt = QRegularExpression("^de ([A-Z0-9/\\-]+)>\\s*$");
+    m_rxPrompt = QRegularExpression("de ([A-Z0-9/\\-]+)>");
     m_rxListLine = QRegularExpression(
-        "^\\s*(\\d+)\\s+"           // msg_id
-        "(\\d{1,2}-\\w{3})\\s+"     // date (e.g. 18-Apr)
-        "([A-Z][$FNKP])\\s+"       // type (e.g. BN, B$, BF, BK, PN)
-        "(\\d+)\\s+"               // size
-        "(\\S+)\\s+"               // category (e.g. WX, NEWS, ALL)
-        "@(\\S+)\\s+"              // distribution (e.g. ON, USA, WW)
-        "(\\S+)\\s+"               // from callsign
-        "(.+)$"                    // title (rest of line)
+        "^\\s*(\\d+)\\s+"              // msg_id
+        "(\\d{1,2}-\\w{3})\\s+"        // date (e.g. 18-Apr)
+        "([A-Z][\\$FNKP])\\s+"        // type (e.g. BN, B$, BF, BK, PN)
+        "(\\d+)\\s+"                   // size
+        "(\\S+)\\s+"                   // category (e.g. WX, NEWS, ALL)
+        "@(\\S+)\\s+"                  // distribution (e.g. ON, USA, WW)
+        "(\\S+)\\s+"                   // from callsign
+        "(.+)$"                        // title (rest of line)
     );
-    m_rxMsgEnd = QRegularExpression("^\\[End of Message #(\\d+) from (\\S+)\\]");
+    m_rxMsgEnd = QRegularExpression("\\[End of Message #(\\d+) from (\\S+)\\]");
 
     initDb();
 }
@@ -50,6 +62,11 @@ void BBSCache::initDb()
     QDir().mkpath(cacheDir);
 
     QString dbPath = cacheDir + "/bbscache.db";
+
+    // Open log file
+    g_logFile.setFileName(cacheDir + "/bbscache.log");
+    g_logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+    bbsLog("BBSCache: started");
 
     m_db = QSqlDatabase::addDatabase("QSQLITE", "bbscache");
     m_db.setDatabaseName(dbPath);
@@ -97,17 +114,28 @@ int BBSCache::getOrCreateNode(const QString &callsign)
     QSqlQuery q(m_db);
     q.prepare("SELECT id FROM nodes WHERE callsign = ?");
     q.addBindValue(callsign);
-    q.exec();
+    if (!q.exec()) {
+        qWarning() << "BBSCache getOrCreateNode SELECT failed:" << q.lastError().text();
+        return -1;
+    }
 
-    if (q.next())
-        return q.value(0).toInt();
+    if (q.next()) {
+        int id = q.value(0).toInt();
+        bbsLog(QString("BBSCache getOrCreateNode: found %1 id=%2").arg(callsign).arg(id));
+        return id;
+    }
 
     q.prepare("INSERT INTO nodes (callsign, last_connected) VALUES (?, ?)");
     q.addBindValue(callsign);
     q.addBindValue(QDateTime::currentSecsSinceEpoch());
-    q.exec();
+    if (!q.exec()) {
+        qWarning() << "BBSCache getOrCreateNode INSERT failed:" << q.lastError().text();
+        return -1;
+    }
 
-    return q.lastInsertId().toInt();
+    int id = q.lastInsertId().toInt();
+    bbsLog(QString("BBSCache getOrCreateNode: created %1 id=%2").arg(callsign).arg(id));
+    return id;
 }
 
 void BBSCache::storeBulletin(int nodeId, const QVariantMap &b)
@@ -126,7 +154,9 @@ void BBSCache::storeBulletin(int nodeId, const QVariantMap &b)
     q.addBindValue(b["from_call"]);
     q.addBindValue(b["title"]);
     q.addBindValue(QDateTime::currentSecsSinceEpoch());
-    q.exec();
+    if (!q.exec())
+        qWarning() << "BBSCache storeBulletin failed:" << q.lastError().text()
+                   << "node_id=" << nodeId << "msg_id=" << b["msg_id"];
 }
 
 void BBSCache::storeMessageBody(int nodeId, int msgId, const QString &body)
@@ -151,8 +181,31 @@ void BBSCache::onDataReceived(Ui_ListenSession *sess, const char *data, int len)
     // Get or create session state
     SessionState &st = m_sessions[sess];
 
+    // Strip control characters and Telnet IAC bytes before buffering.
+    // The raw buffer may contain 0xFF IAC sequences, 0xFE monitor markers,
+    // NUL keepalives, and other non-printable bytes that corrupt regex matching.
+    // Keep only printable ASCII plus \r and \n.
+    QByteArray clean;
+    clean.reserve(len);
+    const unsigned char *src = reinterpret_cast<const unsigned char *>(data);
+    bool skipIAC = false;
+    for (int i = 0; i < len; i++) {
+        unsigned char c = src[i];
+        if (c == 0xFF) {            // Telnet IAC — skip this byte and the next two
+            skipIAC = true;
+            continue;
+        }
+        if (skipIAC) {
+            if (c >= 0xFB && c <= 0xFE) continue;  // IAC option command byte
+            skipIAC = false;                         // IAC + data byte consumed
+            continue;
+        }
+        if (c == '\r' || c == '\n' || (c >= 0x20 && c < 0x7F))
+            clean.append((char)c);
+    }
+
     // Append to line buffer
-    st.lineBuffer.append(QString::fromUtf8(data, len));
+    st.lineBuffer.append(QString::fromLatin1(clean));
 
     // Process complete lines
     int pos;
@@ -181,6 +234,17 @@ void BBSCache::onDataReceived(Ui_ListenSession *sess, const char *data, int len)
 
         processLine(sess, line);
     }
+
+    // Handle unterminated prompt: if the buffer contains only a prompt pattern
+    // (e.g. ">" or "de CALL>") with no line terminator, process it immediately.
+    // BBS nodes often send the prompt without \r\n.
+    {
+        QString pending = st.lineBuffer.trimmed();
+        if (!pending.isEmpty() && detectPrompt(pending)) {
+            st.lineBuffer.clear();
+            processLine(sess, pending);
+        }
+    }
 }
 
 void BBSCache::onCommandSent(Ui_ListenSession *sess, const QString &cmd)
@@ -190,6 +254,7 @@ void BBSCache::onCommandSent(Ui_ListenSession *sess, const QString &cmd)
 
     SessionState &st = m_sessions[sess];
     QString trimmed = cmd.trimmed().toUpper();
+    bbsLog(QString("BBSCache onCommandSent state=%1 cmd=%2").arg(st.state).arg(trimmed));
 
     if (st.state == AtPrompt) {
         if (trimmed.startsWith("LL") || trimmed.startsWith("L ") ||
@@ -209,6 +274,11 @@ void BBSCache::onCommandSent(Ui_ListenSession *sess, const QString &cmd)
                 st.messageAccum.clear();
             }
         }
+        else if (trimmed.startsWith("SP ") || trimmed.startsWith("SB ") ||
+                 trimmed.startsWith("SR ")) {
+            // Send Personal / Send Bulletin / Send Reply — composing, ignore incoming
+            st.state = ComposingMessage;
+        }
     }
 }
 
@@ -220,6 +290,25 @@ void BBSCache::processLine(Ui_ListenSession *sess, const QString &line)
 {
     SessionState &st = m_sessions[sess];
 
+    bbsLog(QString("BBSCache processLine state=%1 line=%2").arg(st.state).arg(line));
+
+    // Re-detection: if a new BBS banner with a different callsign arrives in any
+    // active state, reset the state machine. This handles connecting to a second
+    // node through a local node (e.g. attach 1 → C N3MEL-2).
+    if (st.state != Idle) {
+        QString newCall;
+        if (detectBanner(line, newCall) && !newCall.isEmpty() && newCall != st.nodeCall) {
+            bbsLog(QString("BBSCache: re-detected new node %1 (was %2)").arg(newCall).arg(st.nodeCall));
+            st.state = Connected;
+            st.nodeCall = newCall;
+            st.nodeDbId = -1;
+            st.messageAccum.clear();
+            st.currentMsgId = 0;
+            st.bbsDetectedFired = false;
+            return;
+        }
+    }
+
     switch (st.state) {
     case Idle:
     case Connected:
@@ -228,21 +317,44 @@ void BBSCache::processLine(Ui_ListenSession *sess, const QString &line)
         QString nodeCall;
         if (detectBanner(line, nodeCall)) {
             st.state = Connected;
-            st.nodeCall = nodeCall;
-            st.nodeDbId = getOrCreateNode(nodeCall);
+            if (!nodeCall.isEmpty() && nodeCall != st.nodeCall) {
+                st.nodeCall = nodeCall;
+                st.bbsDetectedFired = false;
+            }
+        }
 
-            // Update last_connected
-            QSqlQuery q(m_db);
-            q.prepare("UPDATE nodes SET last_connected = ? WHERE id = ?");
-            q.addBindValue(QDateTime::currentSecsSinceEpoch());
-            q.addBindValue(st.nodeDbId);
-            q.exec();
+        // Extract node callsign from "CALL-N BBS" line (e.g. "K5DAT-1 BBS")
+        if (st.nodeCall.isEmpty()) {
+            QRegularExpression rxBBSLine("^([A-Z][A-Z0-9]+-\\d+)\\s+BBS");
+            auto mb = rxBBSLine.match(line);
+            if (mb.hasMatch()) {
+                st.nodeCall = mb.captured(1);
+                bbsLog(QString("BBSCache: extracted node from BBS line: %1").arg(st.nodeCall));
+            }
         }
 
         // Look for prompt after connection
         if (st.state == Connected && detectPrompt(line)) {
+            // If nodeCall wasn't set from banner, extract from prompt
+            if (st.nodeCall.isEmpty()) {
+                auto pm = m_rxPrompt.match(line);
+                if (pm.hasMatch())
+                    st.nodeCall = pm.captured(1);
+            }
+            if (!st.nodeCall.isEmpty()) {
+                st.nodeDbId = getOrCreateNode(st.nodeCall);
+                QSqlQuery q(m_db);
+                q.prepare("UPDATE nodes SET last_connected = ? WHERE id = ?");
+                q.addBindValue(QDateTime::currentSecsSinceEpoch());
+                q.addBindValue(st.nodeDbId);
+                q.exec();
+            }
+            bbsLog(QString("BBSCache: AtPrompt reached, node=%1 dbId=%2").arg(st.nodeCall).arg(st.nodeDbId));
             st.state = AtPrompt;
-            emit bbsDetected(sess, st.nodeCall);
+            if (!st.bbsDetectedFired) {
+                st.bbsDetectedFired = true;
+                emit bbsDetected(sess, st.nodeCall);
+            }
         }
         break;
     }
@@ -262,8 +374,19 @@ void BBSCache::processLine(Ui_ListenSession *sess, const QString &line)
         // Try to parse as bulletin list line
         QVariantMap bulletin;
         if (parseListLine(line, bulletin) && st.nodeDbId > 0) {
+            bbsLog(QString("BBSCache: storing bulletin %1 for node %2").arg(bulletin["msg_id"].toString()).arg(st.nodeCall));
             storeBulletin(st.nodeDbId, bulletin);
+        } else {
+            bbsLog(QString("BBSCache: parseListLine FAILED or nodeDbId invalid (%1) for: %2").arg(st.nodeDbId).arg(line));
         }
+        break;
+    }
+
+    case ComposingMessage:
+    {
+        // Wait for prompt to return — BBS sends prompt after message is accepted
+        if (detectPrompt(line))
+            st.state = AtPrompt;
         break;
     }
 
@@ -308,10 +431,11 @@ void BBSCache::processLine(Ui_ListenSession *sess, const QString &line)
 
 bool BBSCache::detectBanner(const QString &line, QString &nodeCall)
 {
-    // Pattern 1: "Connected to BBS" — node call from earlier "Connected to NODE" line
-    auto m1 = m_rxBanner1.match(line);
-    if (m1.hasMatch()) {
-        // nodeCall will be set when we see the [BPQ-] line or prompt
+    // Pattern 1: "NODENAME:CALL} Connected to BBS" — full LinBPQ banner
+    QRegularExpression rxFull("(\\w+):(\\S+)\\}\\s*Connected to BBS");
+    auto mf = rxFull.match(line);
+    if (mf.hasMatch()) {
+        nodeCall = mf.captured(2);  // e.g. VA2OPS-7
         return true;
     }
 
@@ -322,11 +446,32 @@ bool BBSCache::detectBanner(const QString &line, QString &nodeCall)
         return true;
     }
 
-    // Pattern 3: "NODENAME:CALL}" — LinBPQ node banner
-    QRegularExpression rxNode("^(\\w+):(\\S+)\\}");
+    // Pattern 3: "Connected to BBS" alone (node call from prompt later)
+    auto m1 = m_rxBanner1.match(line);
+    if (m1.hasMatch()) {
+        return true;
+    }
+
+    // Pattern 3b: "Connected to <CALL-SSID>" without asterisks (e.g. "Connected to K5DAT-1 500 Mode")
+    // Require SSID (digit after dash) to avoid matching "Connected to BBS"
+    QRegularExpression rxConnCall("\\bConnected to ([A-Z][A-Z0-9]+-\\d+)");
+    auto mc = rxConnCall.match(line);
+    if (mc.hasMatch()) {
+        nodeCall = mc.captured(1);
+        return true;
+    }
+
+    // Pattern 4: "NODENAME:CALL}" — just the node line
+    QRegularExpression rxNode("(\\w+):(\\S+)\\}");
     auto m3 = rxNode.match(line);
     if (m3.hasMatch()) {
-        nodeCall = m3.captured(2);  // e.g. VA2OPS-7
+        nodeCall = m3.captured(2);
+        return true;
+    }
+
+    // Pattern 5: "[BPQ-" version banner — confirms we're on a BBS
+    auto mb = m_rxBPQVersion.match(line);
+    if (mb.hasMatch()) {
         return true;
     }
 
@@ -335,7 +480,11 @@ bool BBSCache::detectBanner(const QString &line, QString &nodeCall)
 
 bool BBSCache::detectPrompt(const QString &line)
 {
-    return m_rxPrompt.match(line).hasMatch();
+    if (m_rxPrompt.match(line).hasMatch())
+        return true;
+
+    // Some BBS nodes use a bare '>' prompt instead of 'de CALL>'
+    return line.trimmed() == ">";
 }
 
 bool BBSCache::parseListLine(const QString &line, QVariantMap &bulletin)

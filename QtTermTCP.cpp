@@ -76,6 +76,10 @@
 #include "TabDialog.h"
 #include "BBSCache.h"
 #include "BBSCacheDialog.h"
+#include "BBSDirectory.h"
+#include "BBSDirectoryDialog.h"
+#include <QFile>
+#include <QRegularExpression>
 #include <QMessageBox>
 #include <time.h>
 #include <QVBoxLayout>
@@ -1315,6 +1319,11 @@ QtTermTCP::QtTermTCP(QWidget *parent) : QMainWindow(parent)
 	connect(bbsCacheAction, SIGNAL(triggered()), this, SLOT(showBBSCache()));
 	bbsCacheAction->setFont(*menufont);
 
+	bbsDirectoryAction = new QAction("BBS Directory", this);
+	setupMenu->addAction(bbsDirectoryAction);
+	connect(bbsDirectoryAction, SIGNAL(triggered()), this, SLOT(showBBSDirectory()));
+	bbsDirectoryAction->setFont(*menufont);
+
 	actChatMode = setupMenuLine(setupMenu, (char *)"Chat Terminal Mode", this, ChatMode);
 	actAutoTeletext = setupMenuLine(setupMenu, (char *)"Auto switch to Teletext", this, AutoTeletext);
 	actBells = setupMenuLine(setupMenu, (char *)"Enable Bells", this, Bells);
@@ -1536,44 +1545,65 @@ void QtTermTCP::doQuit()
 
 void QtTermTCP::showBBSCache()
 {
-	BBSCacheDialog dlg(g_bbsCache, this);
-	dlg.exec();
+	extern Ui_ListenSession * ActiveSession;
+	if (!m_bbsCacheDialog) {
+		m_bbsCacheDialog = new BBSCacheDialog(g_bbsCache, ActiveSession, this);
+		connect(m_bbsCacheDialog, &QDialog::finished, this, [this]() {
+			m_bbsCacheDialog = nullptr;
+		});
+	}
+	m_bbsCacheDialog->show();
+	m_bbsCacheDialog->raise();
+	m_bbsCacheDialog->activateWindow();
+}
+
+void QtTermTCP::showBBSDirectory()
+{
+    // Initialize global directory instance once
+    if (!g_bbsDirectory) {
+        g_bbsDirectory = new BBSDirectory(this);
+        QString localPath = g_bbsDirectory->localFilePath();
+        if (QFile::exists(localPath))
+            g_bbsDirectory->loadFromFile(localPath);
+        else {
+            QString bundled = QCoreApplication::applicationDirPath() + "/bbs-directory.json";
+            if (QFile::exists(bundled))
+                g_bbsDirectory->loadFromFile(bundled);
+        }
+        m_bbsDirectory = g_bbsDirectory;
+    }
+
+    // Determine current VARA BW
+    int bw = 0;
+    if (VARA500)       bw = 500;
+    else if (VARA2300) bw = 2300;
+    else if (VARA2750) bw = 2750;
+
+    // Query rig for current frequency → band filter
+    extern quint64 GetRigFrequency();
+    quint64 rigFreq = GetRigFrequency();
+    QString band = BBSDirectory::freqToBand(rigFreq);
+
+    BBSDirectoryDialog dlg(g_bbsDirectory, band, bw, this);
+    dlg.exec();
 }
 
 void QtTermTCP::onBBSDetected(Ui_ListenSession *sess, const QString &node)
 {
-	if (g_bbsCache && g_bbsCache->hasCache(node)) {
-		QMessageBox::StandardButton reply = QMessageBox::question(
-			this,
-			"BBS Cache",
-			QString("Previous session found for %1.\nReload cached bulletins?").arg(node),
-			QMessageBox::Yes | QMessageBox::No,
-			QMessageBox::No
-		);
+	if (!g_bbsCache)
+		return;
 
-		if (reply == QMessageBox::Yes) {
-			// Get cached bulletins and display in terminal
-			QList<QVariantMap> bulletins = g_bbsCache->getCachedBulletins(node);
-			QString output = QString("\n--- Cached bulletins for %1 (%2 entries) ---\n\n")
-				.arg(node).arg(bulletins.size());
+	// Show a quiet one-line notice in the terminal — use Cache Dialog to browse
+	int count = g_bbsCache->hasCache(node)
+		? g_bbsCache->getCachedBulletins(node).size()
+		: 0;
 
-			for (const QVariantMap &b : bulletins) {
-				output += QString("%1  %2  %3  %4  %5  @%6  %7  %8\n")
-					.arg(b["msg_id"].toInt(), -6)
-					.arg(b["date"].toString(), -6)
-					.arg(b["type"].toString(), -2)
-					.arg(b["size"].toInt(), 6)
-					.arg(b["category"].toString(), -6)
-					.arg(b["dist"].toString(), -4)
-					.arg(b["from_call"].toString(), -8)
-					.arg(b["title"].toString());
-			}
-			output += "\n--- End of cache ---\n\n";
+	QString notice = count > 0
+		? QString("\n[BBSCache: %1 - %2 bulletins cached. Use Setup > BBS Cache to browse.]\n\n").arg(node).arg(count)
+		: QString("\n[BBSCache: %1 - new node, no cache yet.]\n\n").arg(node);
 
-			QByteArray data = output.toUtf8();
-			WritetoOutputWindow(sess, (unsigned char *)data.data(), data.size());
-		}
-	}
+	QByteArray data = notice.toUtf8();
+	WritetoOutputWindow(sess, (unsigned char *)data.data(), data.size());
 }
 
 // "Copy on select" Code
@@ -2336,6 +2366,13 @@ void QtTermTCP::LreturnPressed(Ui_ListenSession * Sess)
 	}
 
 	Sess->KbdStack[0] = qstrdup(stringData.data());
+
+	// Local /cls command — clear terminal view without sending anything
+	if (qstricmp(stringData.data(), "/cls") == 0) {
+		Sess->termWindow->clear();
+		Sess->inputWindow->setText("");
+		return;
+	}
 
 	// Notify BBS cache of user command
 	if (g_bbsCache)
@@ -4796,6 +4833,8 @@ void QtTermTCP::VARAreadyRead()
 
 				n = sprintf(Message, "%s\r\n", Title);
 				WritetoOutputWindow(Sess, (unsigned char *)Message, n);
+				if (g_bbsCache)
+					g_bbsCache->onDataReceived(Sess, Message, n);
 
 				if (TermMode == MDI)
 					Sess->setWindowTitle(Title);
@@ -5310,6 +5349,52 @@ void QtTermTCP::FLRigSetPTT(int PTTState)
 	QByteArray datas = FLRigsock->readAll();
 
 	qDebug(datas.data());
+}
+
+// Set rig frequency via HAMLIB (rigctld) or FLRig
+// Called from BBSDirectoryDialog when user selects a station and QSYs
+void SetRigFrequency(quint64 freq)
+{
+    // Send frequency to rigctld on localhost
+    QTcpSocket sock;
+    sock.connectToHost("127.0.0.1", HamLibPort);
+    if (sock.waitForConnected(1000))
+    {
+        char Msg[32];
+        sprintf(Msg, "F %llu\n", (unsigned long long)freq);
+        sock.write(Msg);
+        sock.waitForBytesWritten(1000);
+        sock.disconnectFromHost();
+    }
+}
+
+// Query rig for current frequency (Hz). Returns 0 if unavailable.
+quint64 GetRigFrequency()
+{
+    QTcpSocket sock;
+    sock.connectToHost("127.0.0.1", HamLibPort);
+    if (sock.waitForConnected(1000))
+    {
+        sock.write("f\n");
+        sock.flush();
+        QByteArray resp;
+        for (int i = 0; i < 5; ++i)
+        {
+            if (sock.waitForReadyRead(400))
+                resp += sock.readAll();
+            if (!resp.isEmpty())
+                break;
+        }
+        sock.disconnectFromHost();
+        QString line = QString(resp).trimmed().split('\n').first().trimmed();
+        if (!line.startsWith("RPRT"))
+        {
+            quint64 freq = line.toULongLong();
+            if (freq > 0)
+                return freq;
+        }
+    }
+    return 0;
 }
 
 

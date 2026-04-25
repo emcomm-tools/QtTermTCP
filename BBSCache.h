@@ -48,7 +48,8 @@ private:
         Connected,
         AtPrompt,
         ParsingList,
-        ReadingMessage
+        ReadingMessage,
+        ComposingMessage
     };
 
     struct SessionState {
@@ -58,9 +59,10 @@ private:
         QString messageAccum;
         int currentMsgId;
         int nodeDbId;
+        bool bbsDetectedFired;  // guard against double-fire during modal event loop
 
         SessionState()
-            : state(Idle), currentMsgId(0), nodeDbId(-1) {}
+            : state(Idle), currentMsgId(0), nodeDbId(-1), bbsDetectedFired(false) {}
     };
 
     QMap<Ui_ListenSession*, SessionState> m_sessions;

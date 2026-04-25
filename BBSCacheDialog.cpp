@@ -1,13 +1,14 @@
 #include "BBSCacheDialog.h"
 #include "BBSCache.h"
+#include "QtTermTCP.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSplitter>
 #include <QHeaderView>
 #include <QMessageBox>
 
-BBSCacheDialog::BBSCacheDialog(BBSCache *cache, QWidget *parent)
-    : QDialog(parent), m_cache(cache)
+BBSCacheDialog::BBSCacheDialog(BBSCache *cache, Ui_ListenSession *sess, QWidget *parent)
+    : QDialog(parent), m_cache(cache), m_sess(sess)
 {
     setWindowTitle("BBS Cache Browser");
     setMinimumSize(800, 600);
@@ -160,6 +161,11 @@ void BBSCacheDialog::bulletinSelected()
     if (body.isEmpty()) {
         m_messageView->setPlainText("(Message body not cached — connect and use R "
                                     + QString::number(msgId) + " to download)");
+        // Fill the input line with the R command if session is active
+        if (m_sess && m_sess->inputWindow) {
+            m_sess->inputWindow->setText(QString("R %1").arg(msgId));
+            m_sess->inputWindow->setFocus();
+        }
     } else {
         m_messageView->setPlainText(body);
     }
